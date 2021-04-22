@@ -1,5 +1,5 @@
 {
-    "name": "genshin-wish-extractor",
+    "name": "genshin-wish-logs",
     "description": "A simple app that extracts your wish history from the Windows Genshin Impact client",
     "version": "1.0.0",
     "main": "src/main.js",
