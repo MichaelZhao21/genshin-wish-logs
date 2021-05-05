@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <title>Genshin Wish Extractor</title>
-    <script src="index.js"></script>
-</head>
-<body>
-    <h1>Genshin Wish Extractor</h1>
-    <button onclick="getWishes()">Extract!</button>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+        <title>Genshin Wish Extractor</title>
+        <script src="jquery-3.6.0.min.js"></script>
+        <script src="index.js"></script>
+        <link rel="stylesheet" href="index.css">
+    </head>
+    <body>
+        <h1>Genshin Wish Extractor</h1>
+        <select id="type-select">
+            <option value="character" selected>Character Event Banner</option>
+            <option value="weapon">Weapon Event Banner</option>
+            <option value="permanant">Permanant Banner</option>
+            <option value="novice">Novice Banner</option>
+        </select>
+        <button onclick="getWishes()">Extract!</button>
+        <div id="progress">Processed pages: </div>
+        <h2 id="data-title">Press extract to get the wish history!</h2>
+        <table id="data">
+            <tr>
+                <th>Item Type</th>
+                <th>Quality</th>
+                <th>Item Name</th>
+                <th>Time Recieved</th>
+            </tr>
+        </table>
+    </body>
 </html>

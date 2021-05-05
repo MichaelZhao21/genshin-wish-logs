@@ -4,12 +4,15 @@ const fs = require('fs');
 const querystring = require('querystring');
 const fetch = require('node-fetch');
 
+let win;
+
 function createWindow() {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: true,
             contextIsolation: true,
         },
     });
@@ -29,10 +32,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
     console.log('Closed!');
-    if (process.platform === 'darwin') app.quit();
+    if (process.platform !== 'darwin') app.quit();
 });
 
-ipcMain.handle('getWishes', async () => {
+ipcMain.handle('getWishes', async (event, type) => {
     const userRegex = /Users\\(.*?)\\/;
     let match = userRegex.exec(__dirname);
     const user = match[1];
@@ -50,12 +53,20 @@ ipcMain.handle('getWishes', async () => {
     match = urlRegex.exec(rawInput);
     const query = match[1];
 
+    // Gacha Types: Char Event (301), Weapon Event (302), Permanant (200), Novice (100)
+    const gachaTypes = {
+        character: 301,
+        weapon: 302,
+        permanant: 200,
+        novice: 100,
+    };
     let apiObj = {
-        gacha_type: 301,
+        gacha_type: gachaTypes[type],
         page: 0,
         size: 20,
         end_id: 0,
     };
+
     const apiUrl = `https://hk4e-api-os.mihoyo.com/event/gacha_info/api/getGachaLog?${query}`;
 
     // Get wishes through api
@@ -70,9 +81,8 @@ ipcMain.handle('getWishes', async () => {
         );
         prevList = data.data.list;
         dataList = dataList.concat(data.data.list);
-        console.log(`Page ${apiObj.page}`);
+        win.webContents.send('wishProgress', apiObj.page);
     } while (prevList.length === 20);
 
-    console.log(dataList.map((d) => d.name));
     return dataList;
 });

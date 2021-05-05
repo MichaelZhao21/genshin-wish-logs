@@ -5,5 +5,8 @@ window.onload = () => {
 };
 
 contextBridge.exposeInMainWorld('api', {
-    getWishes: () => ipcRenderer.invoke('getWishes'),
+    getWishes: (type) => ipcRenderer.invoke('getWishes', type),
+    listen: (channel, func) => {
+        ipcRenderer.on(channel, func);
+    },
 });
