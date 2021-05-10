@@ -8,19 +8,27 @@
         <title>Genshin Wish Extractor</title>
         <script src="jquery-3.6.0.min.js"></script>
         <script src="index.js"></script>
-        <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="index.css" />
     </head>
     <body>
         <h1>Genshin Wish Extractor</h1>
+        <p>
+            Simply open the wish history menu in the game and run this script. You may close the
+            game before running this script as well, but make sure you don't restart the game again.
+            This is because whenever the game starts up, it will delete the log file that this
+            script reads from.
+        </p>
         <select id="type-select">
             <option value="character" selected>Character Event Banner</option>
             <option value="weapon">Weapon Event Banner</option>
             <option value="permanant">Permanant Banner</option>
             <option value="novice">Novice Banner</option>
         </select>
-        <button onclick="getWishes()">Extract!</button>
-        <div id="progress">Processed pages: </div>
+        <button onclick="getWishes()" id="extract-button">Extract!</button>
+        <button onclick="exportData()" id="export-button" disabled>Export current wish data</button>
+        <div id="progress">Processed pages:</div>
         <h2 id="data-title">Press extract to get the wish history!</h2>
+        <div id="error"></div>
         <table id="data">
             <tr>
                 <th>Item Type</th>

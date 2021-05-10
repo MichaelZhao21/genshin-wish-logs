@@ -1,4 +1,4 @@
-const { BrowserWindow, app, ipcMain } = require('electron');
+const { BrowserWindow, app, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const querystring = require('querystring');
@@ -8,8 +8,8 @@ let win;
 
 function createWindow() {
     win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 600,
+        height: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
@@ -36,21 +36,17 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('getWishes', async (event, type) => {
-    const userRegex = /Users\\(.*?)\\/;
-    let match = userRegex.exec(__dirname);
-    const user = match[1];
-
-    if (user === null || user === undefined) return false;
-
     // Look for file: "C:\Users\[user]\AppData\LocalLow\miHoYo\Genshin Impact"
     const rawInput = fs.readFileSync(
-        `C:\\Users\\${user}\\AppData\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt`,
+        `C:\\Users\\${process.env.USERNAME}\\AppData\\LocalLow\\miHoYo\\Genshin Impact\\output_log.txt`,
         'utf8'
     );
 
     // Match line
     const urlRegex = /OnGetWebViewPageFinish:https:\/\/.*?\?(.*?)#\/log/;
     match = urlRegex.exec(rawInput);
+
+    if (match === null) return false;
     const query = match[1];
 
     // Gacha Types: Char Event (301), Weapon Event (302), Permanant (200), Novice (100)
@@ -84,5 +80,34 @@ ipcMain.handle('getWishes', async (event, type) => {
         win.webContents.send('wishProgress', apiObj.page);
     } while (prevList.length === 20);
 
+    fs.writeFileSync(
+        path.join(process.env.TEMP, 'genshin-wish-logs.json'),
+        JSON.stringify({
+            data: dataList,
+            type,
+        })
+    );
     return dataList;
+});
+
+ipcMain.handle('export', async () => {
+    const rawData = fs.readFileSync(path.join(process.env.TEMP, 'genshin-wish-logs.json'), 'utf-8');
+    const data = JSON.parse(rawData);
+    const defaultPath = app.getPath('desktop') + `\\genshin-${data.type}-wish-logs.csv`;
+    const userPath = await dialog.showSaveDialog({
+        title: 'Export Wish History',
+        defaultPath,
+        filters: [
+            { name: 'Comma-Deliminated Values', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] },
+        ],
+    });
+    if (userPath.canceled) return false;
+
+    const csvArr = data.data.map(
+        (d) => `${d.item_type},${d.rank_type},${d.name},${d.time}`
+    );
+    const csvData = 'type,rank,name,time\n' + csvArr.join('\n');
+    fs.writeFileSync(userPath.filePath, csvData);
+    return true;
 });
